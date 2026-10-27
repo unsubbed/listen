@@ -43,6 +43,7 @@ async function importFile(file) {
   if (/\.json$/i.test(file.name)) {
     const data = JSON.parse(await file.text());
     if (data?.app !== 'unsubbed-listen' || !Array.isArray(data.docs)) throw new Error('not a Listen backup');
+    stop(); // before docs change: stop() re-renders the Deck from the current doc
     for (const d of data.docs) {
       if (typeof d?.text !== 'string') continue;
       const clean = { id: String(d.id || uid()), title: String(d.title || 'Untitled'), text: d.text, pos: Math.max(0, d.pos | 0), added: +d.added || Date.now() };
@@ -53,10 +54,10 @@ async function importFile(file) {
     const { title, text } = await T.fileToText(file);
     // The kit toasts "Opened" right after this resolves, so ours must come later.
     if (!text.trim()) return void setTimeout(() => kit.toast(`${file.name} has no text we can read.`), 0);
+    stop();
     newDoc(title, text.replace(/\r\n?/g, '\n'));
     editing = false;
   }
-  stop();
   render();
 }
 
@@ -107,9 +108,9 @@ function buildReader(text) {
 }
 
 function renderDeck() {
-  const d = doc(), n = pieces.length;
-  $('#progress').textContent = n
-    ? `Sentence ${d.pos + 1} of ${n} · about ${Math.ceil(T.countWords(d.text.slice(pieces[d.pos].start)) / (170 * S.rate))} min left`
+  const d = doc(), n = pieces.length, p = pieces[d.pos];
+  $('#progress').textContent = n && p
+    ? `Sentence ${d.pos + 1} of ${n} · about ${Math.ceil(T.countWords(d.text.slice(p.start)) / (170 * S.rate))} min left`
     : 'Nothing to read yet';
   playBtn.disabled = !synth || !n;
   playBtn.classList.toggle('on', playing);
@@ -163,6 +164,9 @@ function setPos(i) {
   kit.store();
 }
 
+// Only cancel when something is queued; also keep the live utterance referenced so Chrome can't garbage-collect it and drop its onend.
+const hush = () => (synth?.speaking || synth?.pending) && synth.cancel();
+let live;
 const voice = () => synth?.getVoices().find((v) => v.voiceURI === sel.value);
 function utter(text) {
   const u = new SpeechSynthesisUtterance(text), v = voice();
@@ -173,9 +177,9 @@ function utter(text) {
 
 function speak(i) {
   const t = ++token, p = pieces[i];
-  synth.cancel();
+  hush();
   setPos(i);
-  const u = utter(doc().text.slice(p.start, p.end));
+  const u = (live = utter(doc().text.slice(p.start, p.end)));
   // A cancelled utterance can still fire events later; the token makes them no-ops.
   u.onboundary = (e) => { if (t === token && e.name === 'word') markWord(i, e.charIndex, e.charLength); };
   u.onend = () => { if (t === token) i + 1 < pieces.length ? speak(i + 1) : finish(); };
@@ -198,7 +202,7 @@ function start(i) {
 function stop() {
   token++;
   playing = false;
-  synth?.cancel();
+  hush();
   clearWord();
   renderDeck();
 }
@@ -302,14 +306,19 @@ shelf.onclick = (e) => {
   const b = e.target.closest('button');
   if (!b) return;
   const id = b.closest('li').dataset.id, d = S.docs.find((x) => x.id === id);
-  if (b.classList.contains('rm')) {
-    if (!confirm(`Remove “${d.title}” from this device?`)) return;
+  const rm = b.classList.contains('rm');
+  if (rm && !confirm(`Remove “${d.title}” from this device?`)) return;
+  if (rm && id !== S.current) {
+    S.docs = S.docs.filter((x) => x !== d);
+    renderShelf();
+    return kit.store();
+  }
+  stop(); // before switching: stop() re-renders the Deck from the current doc's pieces
+  if (rm) {
     S.docs = S.docs.filter((x) => x !== d);
     if (!S.docs.length) newDoc('Untitled', '');
-    if (id !== S.current) { renderShelf(); return kit.store(); }
     S.current = sorted()[0].id;
   } else S.current = id;
-  stop();
   editing = false;
   render();
   kit.store();
@@ -328,7 +337,7 @@ $('#local').onchange = (e) => {
 };
 $('#try').onclick = () => {
   stop();
-  synth.speak(utter('Hello. This is how I sound.'));
+  synth.speak((live = utter('Hello. This is how I sound.')));
 };
 
 $('#size').onchange = (e) => {
@@ -351,6 +360,7 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowRight') move(1);
   else if (e.key === '[') setRate(S.rate - 0.1);
   else if (e.key === ']') setRate(S.rate + 0.1);
+  else if (e.key === 'Enter' && el === reader) start();
   else return;
   e.preventDefault();
 });

@@ -62,7 +62,7 @@
         <button class="u-btn" id="edit">Edit</button>
       </div>
       <p class="u-note" id="no-speech" hidden>This browser can't read aloud. Try a recent Chrome, Edge, Safari or Firefox.</p>
-      <article id="reader"></article>
+      <article id="reader" tabindex="0" aria-labelledby="doc-title"></article>
       <div id="editor" hidden>
         <textarea id="ta" rows="14" aria-label="Document text" placeholder="Paste or type something to hear it read aloud…"></textarea>
         <p class="u-note" id="empty-note">Or use Open to add a .txt, .docx, .epub, .md or .html file.</p>
@@ -80,9 +80,9 @@
       <section class="u-card" aria-labelledby="voice-h">
         <h2 id="voice-h">Voice</h2>
         <select id="voice" aria-labelledby="voice-h"></select>
-        <p class="u-note" id="no-voices" hidden>No voices found. Your device may need a speech voice installed, or untick the box above.</p>
         <label class="check"><input type="checkbox" id="local" checked> Only voices that stay on this device</label>
         <p class="u-note" id="local-note">Your text never leaves this device.</p>
+        <p class="u-note" id="no-voices" hidden>No voices found. Your device may need a speech voice installed, or untick the box above.</p>
         <button class="u-btn" id="try">Try</button>
       </section>
     </aside>

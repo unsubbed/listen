@@ -62,6 +62,9 @@ assert.equal(await T.docxToText(zip), 'First para\nSecond part');
 await assert.rejects(T.readZip(new ArrayBuffer(10)), /not a zip/);
 
 await assert.rejects(T.docxToText(await T.readZip(makeZip([['a.txt', 'x', 0]]))), /not a docx/);
+// page breaks with attributes split words; numeric entities are decoded; tab-stop definitions add nothing
+const xml2 = '<w:p><w:pPr><w:tabs><w:tab w:val="left" w:pos="720"/></w:tabs></w:pPr><w:r><w:t>end</w:t><w:br w:type="page"/><w:t>it&#x2019;s&#160;ok &amp; done</w:t></w:r></w:p>';
+assert.equal(await T.docxToText(await T.readZip(makeZip([['word/document.xml', xml2, 8]]))), 'end\nit’s ok & done');
 await assert.rejects(T.epubToText(await T.readZip(makeZip([['a.txt', 'x', 0]]))), /not an epub/);
 assert.equal(pieces('"Dr. Smith left. (J. R. Smith too.)').length, 2);
 

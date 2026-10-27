@@ -109,14 +109,16 @@ const ListenText = (() => {
     return files;
   }
 
-  const unescapeXml = (s) => s.replace(/&(lt|gt|quot|apos|amp);/g, (_, e) => ({ lt: '<', gt: '>', quot: '"', apos: "'", amp: '&' })[e]);
+  const unescapeXml = (s) => s.replace(/&(?:(lt|gt|quot|apos|amp)|#(x?)([0-9a-f]+));/gi, (_, e, x, n) =>
+    e ? { lt: '<', gt: '>', quot: '"', apos: "'", amp: '&' }[e] : String.fromCodePoint(parseInt(n, x ? 16 : 10)));
 
   async function docxToText(zip) {
     if (!zip.has('word/document.xml')) throw new Error('not a docx');
     const xml = await zip.get('word/document.xml')();
     return (xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []).map((para) =>
-      (para.match(/<w:t[ >][^<]*<\/w:t>|<w:tab\/>|<w:br\/>/g) || []).map((t) =>
-        t === '<w:tab/>' ? ' ' : t === '<w:br/>' ? '\n' : unescapeXml(t.replace(/<[^>]*>/g, ''))).join('')).join('\n');
+      // Bare <w:tab/> only: tab-stop definitions in paragraph properties are <w:tab .../> too.
+      (para.match(/<w:t[ >][^<]*<\/w:t>|<w:tab\/>|<w:(?:br|cr)\b[^>]*\/>/g) || []).map((t) =>
+        t === '<w:tab/>' ? ' ' : /^<w:(br|cr)/.test(t) ? '\n' : unescapeXml(t.replace(/<[^>]*>/g, ''))).join('')).join('\n');
   }
 
   async function epubToText(zip) {
@@ -133,7 +135,8 @@ const ListenText = (() => {
     const parts = [];
     for (const ref of opf.match(/<itemref\s[^>]*>/g) || []) {
       const h = href[/idref="([^"]*)"/.exec(ref)?.[1]];
-      const entry = h && zip.get(decodeURIComponent(new URL(h, 'http://z/' + opfPath).pathname.slice(1)));
+      let entry;
+      try { entry = h && zip.get(decodeURIComponent(new URL(h, 'http://z/' + opfPath).pathname.slice(1))); } catch {} // skip one bad href, keep the book
       if (entry) parts.push(htmlToText(await entry()));
     }
     return parts.filter(Boolean).join('\n\n');

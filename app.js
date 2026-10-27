@@ -19,8 +19,8 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const doc = () => S.docs.find((d) => d.id === S.current);
 const sorted = () => [...S.docs].sort((a, b) => b.added - a.added);
 const firstLine = (t) => t.trim().split('\n')[0].trim().slice(0, 50);
-function newDoc(title, text) {
-  const d = { id: uid(), title, text, pos: 0, added: Date.now() };
+function newDoc(title, text, id = uid()) {
+  const d = { id, title, text, pos: 0, added: Date.now() };
   S.docs.push(d);
   S.current = d.id;
 }
@@ -125,7 +125,7 @@ function renderRate() {
 function rowMeta(d) {
   let c = counts.get(d);
   if (!c || c.text !== d.text) counts.set(d, (c = { text: d.text, n: T.splitSentences(d.text).length, min: Math.ceil(T.countWords(d.text) / 170) }));
-  return `${c.min} min · ${c.n ? Math.round((d.pos / c.n) * 100) : 0}%`;
+  return `${c.min} min · ${c.n ? Math.round((Math.min(d.pos, c.n) / c.n) * 100) : 0}%`;
 }
 
 function renderShelf() {
@@ -287,9 +287,13 @@ ta.oninput = () => {
   d.pos = 0;
   // shortcut: re-splits the whole text per keystroke; fine for articles, debounce if huge docs get typed in.
   pieces = T.splitSentences(d.text);
+  counts.set(d, { text: d.text, n: pieces.length, min: Math.ceil(T.countWords(d.text) / 170) }); // reuse this split for the Shelf row
   $('#doc-title').textContent = d.title;
+  const row = shelf.querySelector('[aria-current]');
+  row.querySelector('.t').textContent = d.title;
+  row.querySelector('.m').textContent = rowMeta(d);
+  row.nextSibling.setAttribute('aria-label', `Remove ${d.title}`);
   renderDeck();
-  renderShelf();
   kit.store();
 };
 
@@ -360,7 +364,7 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowRight') move(1);
   else if (e.key === '[') setRate(S.rate - 0.1);
   else if (e.key === ']') setRate(S.rate + 0.1);
-  else if (e.key === 'Enter' && el === reader) start();
+  else if (e.key === 'Enter' && el === reader) { if (!playing) start(); }
   else return;
   e.preventDefault();
 });
@@ -371,8 +375,9 @@ addEventListener('resize', measureBar);
 addEventListener('pagehide', () => synth?.cancel()); // Chrome can keep talking after a reload
 
 // ---- Start ----
-if (!Array.isArray(S.docs)) S.docs = [];
-if (!S.docs.length) newDoc('Welcome to Listen', WELCOME);
+// Stored state comes from this app, but a damaged entry must not stop the page loading.
+S.docs = (Array.isArray(S.docs) ? S.docs : []).filter((d) => typeof d?.text === 'string' && d.id).map((d) => ({ ...d, title: String(d.title || 'Untitled') }));
+if (!S.docs.length) newDoc('Welcome to Listen', WELCOME, 'welcome'); // fixed id, so restoring a backup replaces it instead of duplicating it
 if (!doc()) S.current = sorted()[0].id;
 S.rate = Math.min(3, Math.max(0.5, +S.rate || 1));
 if (!['s', 'm', 'l'].includes(S.size)) S.size = 'm';

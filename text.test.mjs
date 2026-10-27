@@ -61,4 +61,18 @@ assert.equal(await zip.get('a.txt')(), 'héllo');
 assert.equal(await T.docxToText(zip), 'First para\nSecond part');
 await assert.rejects(T.readZip(new ArrayBuffer(10)), /not a zip/);
 
+await assert.rejects(T.docxToText(await T.readZip(makeZip([['a.txt', 'x', 0]]))), /not a docx/);
+await assert.rejects(T.epubToText(await T.readZip(makeZip([['a.txt', 'x', 0]]))), /not an epub/);
+assert.equal(pieces('"Dr. Smith left. (J. R. Smith too.)').length, 2);
+
+for (const s of ['Word one. '.repeat(30000), 'Dr. '.repeat(75000)]) {
+  const t0 = Date.now();
+  T.splitSentences(s);
+  assert.ok(Date.now() - t0 < 1000, 'splitSentences too slow');
+}
+
+assert.deepEqual(await T.fileToText(new File(['# Hi\n- **x**'], 'note.md')), { title: 'note', text: 'Hi\nx' });
+assert.deepEqual(await T.fileToText(new File(['plain'], 'a.b.txt')), { title: 'a.b', text: 'plain' });
+await assert.rejects(T.fileToText(new File(['x'], 'txt')), /unsupported/);
+
 console.log('all text tests passed');

@@ -30,7 +30,9 @@ const ListenText = (() => {
       let m;
       while ((m = re.exec(line))) {
         if (/^\.["'”’)\]]*$/.test(m[0])) {
-          const word = /(\S+)$/.exec(line.slice(0, m.index))?.[1] || '';
+          let w = m.index; // walk back one word only, so long lines stay linear
+          while (w > 0 && !/\s/.test(line[w - 1])) w--;
+          const word = line.slice(w, m.index).replace(/^["'“‘(\[]+/, '');
           if (ABBR.test(word) || /^[A-Z]$/.test(word)) continue;
         }
         chunk(text, s, lineStart + m.index + m[0].length, out);
@@ -110,6 +112,7 @@ const ListenText = (() => {
   const unescapeXml = (s) => s.replace(/&(lt|gt|quot|apos|amp);/g, (_, e) => ({ lt: '<', gt: '>', quot: '"', apos: "'", amp: '&' })[e]);
 
   async function docxToText(zip) {
+    if (!zip.has('word/document.xml')) throw new Error('not a docx');
     const xml = await zip.get('word/document.xml')();
     return (xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []).map((para) =>
       (para.match(/<w:t[ >][^<]*<\/w:t>|<w:tab\/>|<w:br\/>/g) || []).map((t) =>
@@ -117,8 +120,10 @@ const ListenText = (() => {
   }
 
   async function epubToText(zip) {
+    if (!zip.has('META-INF/container.xml')) throw new Error('not an epub');
     const container = await zip.get('META-INF/container.xml')();
     const opfPath = /full-path="([^"]+)"/.exec(container)?.[1];
+    if (!zip.has(opfPath)) throw new Error('not an epub');
     const opf = await zip.get(opfPath)();
     const href = {};
     for (const tag of opf.match(/<item\s[^>]*>/g) || []) {
@@ -136,7 +141,7 @@ const ListenText = (() => {
 
   async function fileToText(file) {
     const dot = file.name.lastIndexOf('.');
-    const ext = file.name.slice(dot + 1).toLowerCase();
+    const ext = dot < 0 ? '' : file.name.slice(dot + 1).toLowerCase();
     const title = dot > 0 ? file.name.slice(0, dot) : file.name;
     let text;
     if (ext === 'txt') text = await file.text();

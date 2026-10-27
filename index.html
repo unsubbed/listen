@@ -5,15 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- No outside requests: no analytics, no CDNs, no fonts. Files stay on this device. -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>App Name · Unsubbed</title>
-  <meta name="description" content="A free alternative to X. Runs in your browser; your files never leave your device.">
+  <title>Unsubbed Listen · Unsubbed</title>
+  <meta name="description" content="A free alternative to Speechify. Reads your text aloud in your browser; nothing leaves your device.">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="kit.css">
+  <link rel="stylesheet" href="app.css">
 </head>
 <body>
   <header class="u-bar">
     <a class="u-brand" href="./">
-      <img src="logo.svg" alt=""><span data-app-name>App Name</span>
+      <img src="logo.svg" alt=""><span data-app-name>Unsubbed Listen</span>
     </a>
     <button class="u-btn" data-import title="Open a file">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 15V3m0 0-4 4m4-4 4 4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
@@ -32,14 +33,59 @@
     </a>
   </header>
 
-  <main id="app">
-    <!-- Each app puts its own interface here. This demo is replaced by the builder. -->
-    <div class="u-card">
-      <label class="u-field">
-        <span>Demo notes. Saved on this device as you type.</span>
-        <textarea id="demo" rows="10" placeholder="Type something, then try Save and Open…"></textarea>
-      </label>
-    </div>
+  <main id="app" class="listen">
+    <section class="deck" aria-label="Player">
+      <button class="u-btn icon" id="back" aria-label="Previous sentence">
+        <svg viewBox="0 0 24 24"><path d="M6 5v14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg>
+      </button>
+      <button class="play" id="play" aria-label="Play">
+        <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15L20 12z" fill="currentColor"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></svg>
+      </button>
+      <button class="u-btn icon" id="fwd" aria-label="Next sentence">
+        <svg viewBox="0 0 24 24"><path d="M18 5v14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M5 5.5v13L15 12z" fill="currentColor"/></svg>
+      </button>
+      <p class="progress" id="progress">Nothing to read yet</p>
+      <div class="speed">
+        <div>
+          <button class="u-btn icon" id="slower" aria-label="Slower">−</button>
+          <output id="rate" aria-live="polite">1.0×</output>
+          <button class="u-btn icon" id="faster" aria-label="Faster">+</button>
+        </div>
+        <small id="wpm">≈ 170 words/min</small>
+      </div>
+    </section>
+
+    <section class="u-card reader-card" aria-labelledby="doc-title">
+      <div class="reader-head">
+        <h1 id="doc-title"></h1>
+        <button class="u-btn" id="edit">Edit</button>
+      </div>
+      <p class="u-note" id="no-speech" hidden>This browser can't read aloud. Try a recent Chrome, Edge, Safari or Firefox.</p>
+      <article id="reader"></article>
+      <div id="editor" hidden>
+        <textarea id="ta" rows="14" aria-label="Document text" placeholder="Paste or type something to hear it read aloud…"></textarea>
+        <p class="u-note" id="empty-note">Or use Open to add a .txt, .docx, .epub, .md or .html file.</p>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="u-card" aria-labelledby="shelf-h">
+        <div class="card-head">
+          <h2 id="shelf-h">Shelf</h2>
+          <button class="u-btn" id="new">New</button>
+        </div>
+        <ul id="shelf"></ul>
+      </section>
+      <section class="u-card" aria-labelledby="voice-h">
+        <h2 id="voice-h">Voice</h2>
+        <select id="voice" aria-labelledby="voice-h"></select>
+        <p class="u-note" id="no-voices" hidden>No voices found. Your device may need a speech voice installed, or untick the box above.</p>
+        <label class="check"><input type="checkbox" id="local" checked> Only voices that stay on this device</label>
+        <p class="u-note" id="local-note">Your text never leaves this device.</p>
+        <button class="u-btn" id="try">Try</button>
+      </section>
+    </aside>
   </main>
 
   <footer class="u-foot">
@@ -58,7 +104,17 @@
           <option value="dark">Dark</option>
         </select>
       </label>
-      <div id="app-settings"><!-- Apps add their own settings here. --></div>
+      <div id="app-settings">
+        <label class="u-field">
+          <span>Text size</span>
+          <select id="size">
+            <option value="s">Small</option>
+            <option value="m">Medium</option>
+            <option value="l">Large</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="follow" checked> Follow along as it reads</label>
+      </div>
       <hr>
       <p class="u-note">Everything is stored only in this browser. Clearing it cannot be undone; save a copy first.</p>
       <div class="u-row">
@@ -71,6 +127,7 @@
   <div class="u-toast" role="status" aria-live="polite" hidden></div>
 
   <script src="kit.js"></script>
+  <script src="text.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

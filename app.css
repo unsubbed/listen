@@ -1,7 +1,6 @@
-/* Unsubbed Listen. Kit tokens plus one app token: the sand tint for the sentence being read. */
-:root { --sand: #f0e2c3; --serif: ui-serif, Georgia, Cambria, "Times New Roman", serif; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --sand: #42392a; } }
-:root[data-theme="dark"] { --sand: #42392a; }
+/* Unsubbed Listen. The app color (coral) is the only color set here; the sentence tint derives from it. */
+:root { --app: #f0532d; --app-dark: #ff8a66; --serif: ui-serif, Georgia, Cambria, "Times New Roman", serif; }
+:root { --now: color-mix(in oklab, var(--accent) 18%, var(--surface)); }
 
 main.listen { max-width: 1120px; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; }
 .listen h1, .listen h2 { margin: 0; font-size: 1rem; }
@@ -25,10 +24,19 @@ main.listen { max-width: 1120px; display: grid; grid-template-columns: minmax(0,
 .progress { flex: 1 1 12rem; margin: 0 .5rem; color: var(--muted); font-size: .9375rem; }
 .speed { display: grid; justify-items: center; margin-left: auto; }
 .speed > div { display: flex; align-items: center; gap: .25rem; }
-.speed .u-btn { font-size: 1.25rem; }
 .speed output { min-width: 3.25rem; text-align: center; font-weight: 650; font-variant-numeric: tabular-nums; }
 .speed small { color: var(--muted); font-size: .75rem; }
-@media (max-width: 599px) { .progress { order: 1; flex-basis: 100%; margin: 0; } }
+@media (max-width: 599px) {
+  .deck { gap: .375rem; padding: .625rem .75rem; }
+  .play { width: 48px; height: 48px; border-radius: 14px; }
+  .speed output { min-width: 2.75rem; }
+  .progress { order: 1; flex-basis: 100%; margin: 0; font-size: .875rem; }
+}
+/* Phone header: same tightening as other Unsubbed apps so the name fits */
+@media (max-width: 420px) {
+  .u-bar { gap: .25rem; } .u-bar .u-btn { width: 36px; min-height: 36px; }
+  .u-brand { gap: .5rem; } .u-brand img { width: 28px; height: 28px; } .u-brand span { font-size: 1rem; }
+}
 
 /* Reader */
 .reader-card { border-top: 0; border-radius: 0 0 var(--radius) var(--radius); padding: 1.25rem 1.25rem 2rem; }
@@ -39,10 +47,11 @@ main.listen { max-width: 1120px; display: grid; grid-template-columns: minmax(0,
 #reader[data-size="l"] { font-size: 1.375rem; }
 #reader p { margin: 0 0 1em; }
 .s { cursor: pointer; border-radius: 4px; }
-.s:hover { text-decoration: underline dotted var(--muted); }
-.s.now { background: var(--sand); box-shadow: 0 0 0 .15em var(--sand); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.s:not(.now):hover { background: var(--accent-soft); }
+.s.now { background: var(--now); box-shadow: 0 0 0 .15em var(--now); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 ::highlight(listen-word) { text-decoration: underline 3px var(--accent); text-underline-offset: .22em; }
-#ta { font: 1.0625rem/1.6 var(--serif); min-height: 50vh; display: block; }
+#reader:focus-visible { outline-offset: .5rem; border-radius: 4px; }
+#ta { caret-color: var(--accent); font: 1.0625rem/1.6 var(--serif); min-height: 50vh; display: block; }
 
 /* Side column: Shelf and Voice */
 .side { display: grid; gap: 1rem; align-content: start; margin-top: 1.5rem; }
@@ -55,7 +64,7 @@ main.listen { max-width: 1120px; display: grid; grid-template-columns: minmax(0,
   border: 1px solid transparent; border-radius: var(--radius); background: none; color: inherit; font: inherit;
 }
 .open:hover { border-color: var(--line); }
-.open[aria-current="true"] { background: var(--bg); border-color: var(--line); box-shadow: inset 3px 0 0 var(--accent); }
+.open[aria-current="true"] { background: var(--accent-soft); border-color: var(--accent-line); }
 .open .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 .open .m { font-size: .8125rem; color: var(--muted); }
 .u-btn.rm { border-color: transparent; color: var(--muted); }
@@ -67,3 +76,5 @@ main.listen { max-width: 1120px; display: grid; grid-template-columns: minmax(0,
   main.listen { grid-template-columns: minmax(0, 1fr) 280px; grid-template-rows: auto 1fr; column-gap: 1.5rem; }
   .side { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
 }
+
+html { scrollbar-color: var(--line) transparent; }

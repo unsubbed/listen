@@ -28,14 +28,18 @@
     --line: #283032; --accent: var(--app-dark); --accent-ink: #0b0e0f; --danger: #ff8a80;
     color-scheme: dark;
   }
+  :root:not([data-theme="light"]) { --accent-strong: var(--accent); }
 }
 :root[data-theme="dark"] {
   --bg: #0f1213; --surface: #171b1c; --ink: #f1eee8; --muted: #9ba5a3;
   --line: #283032; --accent: var(--app-dark); --accent-ink: #0b0e0f; --danger: #ff8a80;
   color-scheme: dark;
 }
+:root[data-theme="dark"] { --accent-strong: var(--accent); }
 :root {
   --accent-soft: color-mix(in oklab, var(--accent) 12%, var(--surface));
+  /* Readable version of the app color for text and filled buttons (>= 4.5:1). Light mode darkens it. */
+  --accent-strong: color-mix(in oklab, var(--accent) 80%, black);
   --accent-line: color-mix(in oklab, var(--accent) 35%, var(--line));
 }
 
@@ -51,7 +55,7 @@ body {
   background-attachment: fixed;
 }
 :focus-visible { outline: 3px solid color-mix(in oklab, var(--accent) 60%, transparent); outline-offset: 2px; }
-a { color: var(--accent); }
+a { color: var(--accent-strong); }
 ::selection { background: color-mix(in oklab, var(--accent) 28%, transparent); }
 
 /* Header: frosted bar with an app-colored stripe */
@@ -66,13 +70,14 @@ a { color: var(--accent); }
 .u-brand img { width: 32px; height: 32px; flex: none; }
 .u-brand span {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-weight: 800; font-size: 1.125rem; letter-spacing: -.02em; color: var(--accent);
+  font-weight: 800; font-size: 1.125rem; letter-spacing: -.02em; color: var(--accent-strong);
 }
 
 /* Main + footer */
 main { flex: 1; width: 100%; max-width: 1040px; margin: 0 auto; padding: 1.75rem 1rem; }
 .u-foot { padding: 1.25rem 1rem; text-align: center; color: var(--muted); font-size: .875rem; }
 .u-foot a { font-weight: 600; }
+.u-legal { display: inline-block; margin-top: .25rem; font-size: .75rem; opacity: .8; }
 
 /* Buttons: pills */
 .u-btn {
@@ -84,8 +89,8 @@ main { flex: 1; width: 100%; max-width: 1040px; margin: 0 auto; padding: 1.75rem
 .u-btn:hover { border-color: var(--accent-line); background: var(--accent-soft); }
 .u-btn:active { transform: translateY(1px); }
 .u-btn svg { width: 18px; height: 18px; flex: none; }
-.u-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 16px -6px var(--accent); }
-.u-btn.primary:hover { background: color-mix(in oklab, var(--accent) 88%, black); }
+.u-btn.primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--accent-ink); box-shadow: 0 6px 16px -6px var(--accent); }
+.u-btn.primary:hover { background: color-mix(in oklab, var(--accent-strong) 88%, black); }
 .u-btn.support svg { color: var(--brand); fill: var(--brand); }
 .u-btn.danger { color: var(--danger); border-color: currentColor; }
 .u-btn.icon { padding: 0; width: 40px; justify-content: center; }
@@ -106,7 +111,7 @@ textarea { resize: vertical; width: 100%; }
 .u-card.accent { border-color: var(--accent-line); background: linear-gradient(var(--accent-soft), var(--surface) 60%); }
 
 /* Chip: small app-colored label */
-.u-chip { display: inline-flex; align-items: center; gap: .25rem; padding: .125rem .625rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: .8125rem; font-weight: 700; }
+.u-chip { display: inline-flex; align-items: center; gap: .25rem; padding: .125rem .625rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); font-size: .8125rem; font-weight: 700; }
 
 /* Dialog */
 dialog {

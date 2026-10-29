@@ -28,7 +28,10 @@ It's a plain web page. Download this repository and open `index.html`, or serve 
 
 ---
 
-Free forever. Support development → [unsubbed.org/support](https://unsubbed.org/support)
+Free forever. Support development → [ko-fi.com/unsubbed](https://ko-fi.com/unsubbed) · New app every day → [@unsubbed_org on X](https://x.com/unsubbed_org)
+
+## Not affiliated
+Speechify is a trademark of its owner. Unsubbed is an independent, clean-room project and is not affiliated with, sponsored by or endorsed by them. We mention the name only to describe what this app is an alternative to.
 
 ## License & contributing
 Unsubbed apps are licensed under the [GNU AGPL-3.0](LICENSE). If you share a modified version or run it as a service, you must publish your changes under the same license.

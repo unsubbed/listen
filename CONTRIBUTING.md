@@ -24,4 +24,4 @@ New to pull requests? Opening an **issue** that describes your idea is welcome t
 - No paid bug bounties are offered.
 
 ## Support the project
-Unsubbed apps are free forever. If one saves you a subscription, consider supporting development at **unsubbed.org/support**.
+Unsubbed apps are free forever. If one saves you a subscription, consider supporting development at **[ko-fi.com/unsubbed](https://ko-fi.com/unsubbed)**.

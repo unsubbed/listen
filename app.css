@@ -14,7 +14,7 @@ main.listen { max-width: 1120px; display: grid; grid-template-columns: minmax(0,
 }
 .play {
   width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: 16px;
-  background: var(--accent); color: var(--accent-ink); cursor: pointer;
+  background: var(--accent-strong); color: var(--accent-ink); cursor: pointer;
 }
 .play svg { width: 26px; height: 26px; }
 .play .i-pause, .play.on .i-play { display: none; }
@@ -70,7 +70,7 @@ main.listen { max-width: 1120px; display: grid; grid-template-columns: minmax(0,
 .u-btn.rm { border-color: transparent; color: var(--muted); }
 #voice { width: 100%; }
 .check { display: flex; align-items: flex-start; gap: .5rem; margin-top: .75rem; font-size: .9375rem; cursor: pointer; }
-.check input { min-height: 0; margin: .25rem 0 0; accent-color: var(--accent); }
+.check input { min-height: 0; margin: .25rem 0 0; accent-color: var(--accent-strong); }
 
 @media (min-width: 900px) {
   main.listen { grid-template-columns: minmax(0, 1fr) 280px; grid-template-rows: auto 1fr; column-gap: 1.5rem; }
